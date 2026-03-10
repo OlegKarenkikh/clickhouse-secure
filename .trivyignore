@@ -1,16 +1,3 @@
-# .trivyignore — обоснованные исключения CVE
-# Используется только если пришлось откатиться на Ubuntu-базу.
-# При использовании cgr.dev/chainguard/clickhouse этот файл не нужен —
-# оставлен как документация и fallback.
-#
-# CVE из отчёта req-1163755 (Ubuntu 24.04 Noble, 26.1.3-noble):
-# Фиксов в Ubuntu 24.04 нет upstream — единственный вариант это смена базы.
-#
-# CVE-2024-41996  # openssl/libssl3: нет фикса в Ubuntu 24.04; upstream pending
-CVE-2024-41996
-# CVE-2026-24882  # gpgv: нет фикса; gpgv не используется в runtime ClickHouse
-CVE-2026-24882
-# CVE-2024-10041  # libpam-*: нет фикса; PAM не экспонируется внешним образом
-CVE-2024-10041
-# CVE-2025-45582  # tar: нет фикса; tar не используется в runtime ClickHouse
-CVE-2025-45582
+# .trivyignore
+# Alpine base: most Ubuntu 22.04 CVEs are eliminated by switching base image.
+# Add entries here only for confirmed unfixed CVEs after scan.
