@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 # ClickHouse secure hardened image
-# Base: official clickhouse-server v26.2.4.23-stable
-FROM clickhouse/clickhouse-server:26.2.4.23-stable
+# Base: official clickhouse-server v26.2.3.2
+FROM clickhouse/clickhouse-server:26.2.3.2
 
 LABEL org.opencontainers.image.title="clickhouse-secure" \
-      org.opencontainers.image.version="26.2.4.23-stable" \
+      org.opencontainers.image.version="26.2.3.2" \
       org.opencontainers.image.source="https://github.com/OlegKarenkikh/clickhouse-secure" \
       org.opencontainers.image.licenses="Apache-2.0"
 

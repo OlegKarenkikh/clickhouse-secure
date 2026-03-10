@@ -10,6 +10,7 @@ on:
 
 env:
   DOCKERHUB_IMAGE: olegkarenkikh/clickhouse-secure
+  CH_VERSION: 26.2.3.2
 
 jobs:
 
@@ -52,6 +53,8 @@ jobs:
 
       - name: Trivy - SARIF
         uses: aquasecurity/trivy-action@master
+        if: always()
+        continue-on-error: true
         with:
           image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ github.sha }}
           format: sarif
@@ -62,12 +65,14 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
 
       - name: Trivy - JSON artifact
         uses: aquasecurity/trivy-action@master
+        if: always()
+        continue-on-error: true
         with:
           image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ github.sha }}
           format: json
@@ -77,6 +82,7 @@ jobs:
 
       - name: Upload JSON artifact
         uses: actions/upload-artifact@v4
+        if: always() && hashFiles('trivy-results.json') != ''
         with:
           name: trivy-report-${{ github.sha }}
           path: trivy-results.json
@@ -123,7 +129,7 @@ jobs:
           TAGS="${{ env.DOCKERHUB_IMAGE }}:latest"
           TAGS="${TAGS},${{ env.DOCKERHUB_IMAGE }}:${SHORT_SHA}"
           TAGS="${TAGS},${{ env.DOCKERHUB_IMAGE }}:${DATE}"
-          TAGS="${TAGS},${{ env.DOCKERHUB_IMAGE }}:26.2.4.23-stable"
+          TAGS="${TAGS},${{ env.DOCKERHUB_IMAGE }}:${{ env.CH_VERSION }}"
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
 
