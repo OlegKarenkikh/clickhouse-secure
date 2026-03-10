@@ -8,6 +8,7 @@ LABEL org.opencontainers.image.title="clickhouse-secure" \
 USER root
 RUN apk update --no-cache && \
     apk upgrade --no-cache && \
+    apk del busybox-wget && \
     rm -rf /var/cache/apk/*
 
 EXPOSE 8123 9000 9009
