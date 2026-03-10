@@ -1,0 +1,3 @@
+# .trivyignore — ClickHouse secure build
+# Add CVE exceptions here with justification:
+# CVE-XXXX-YYYY  # reason: not applicable / upstream fix pending
