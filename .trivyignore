@@ -1,3 +1,5 @@
 # .trivyignore
-# Alpine base: most Ubuntu 22.04 CVEs are eliminated by switching base image.
-# Add entries here only for confirmed unfixed CVEs after scan.
+# CVE-2025-60876 | busybox <= 1.37.0-r30 | CVSS 6.5 MEDIUM
+# wget path traversal. Mitigated: /usr/bin/wget removed in Dockerfile.
+# ClickHouse does not use wget. No fix in Alpine 3.23 as of 2026-03-10.
+CVE-2025-60876
