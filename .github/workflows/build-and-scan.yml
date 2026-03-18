@@ -30,8 +30,19 @@ jobs:
       - name: Build Docker image (local)
         run: docker build -t "${{ env.LOCAL_TAG }}" .
 
+      # Smoke-test: verify the server starts and serves HTTP requests
+      - name: Smoke-test container
+        run: |
+          CID=$(docker run -d -p 18123:8123 "${{ env.LOCAL_TAG }}")
+          echo "Container: $CID"
+          sleep 10
+          curl -sf http://localhost:18123/ping
+          VER=$(curl -sf 'http://localhost:18123/?query=SELECT+version()')
+          echo "ClickHouse version: $VER"
+          docker stop "$CID"
+
       - name: Trivy - Table (PR log)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ${{ env.LOCAL_TAG }}
           format: table
@@ -41,7 +52,7 @@ jobs:
         continue-on-error: true
 
       - name: Trivy - SARIF
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.30.0
         if: always()
         continue-on-error: true
         with:
@@ -59,7 +70,7 @@ jobs:
           sarif_file: trivy-results.sarif
 
       - name: Trivy - JSON artifact
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.30.0
         if: always()
         continue-on-error: true
         with:
@@ -78,7 +89,7 @@ jobs:
           retention-days: 30
 
       - name: Trivy - Gate (fail on CRITICAL/HIGH)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ${{ env.LOCAL_TAG }}
           format: table
