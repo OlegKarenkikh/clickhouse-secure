@@ -18,7 +18,7 @@ docker run -d \
   --name clickhouse \
   -p 8123:8123 \
   -p 9000:9000 \
-  common-docker.artifactory.corp.ingos.ru/olegkarenkikh/clickhouse-secure:latest
+  olegkarenkikh/clickhouse-secure:latest
 ```
 
 ### Test the container is running
@@ -49,7 +49,7 @@ docker run -d \
   -v /opt/clickhouse/logs:/var/log/clickhouse-server \
   -v /opt/clickhouse/config.d:/etc/clickhouse-server/config.d \
   -v /opt/clickhouse/users.d:/etc/clickhouse-server/users.d \
-  common-docker.artifactory.corp.ingos.ru/olegkarenkikh/clickhouse-secure:latest
+  olegkarenkikh/clickhouse-secure:latest
 ```
 
 | Host path | Container path | Description |
@@ -97,7 +97,7 @@ You can override it at `docker run` time:
 ```bash
 docker run -d \
   -v /my/config.xml:/etc/clickhouse-server/config.xml \
-  common-docker.artifactory.corp.ingos.ru/olegkarenkikh/clickhouse-secure:latest \
+  olegkarenkikh/clickhouse-secure:latest \
   --config-file=/etc/clickhouse-server/config.xml
 ```
 
@@ -109,7 +109,8 @@ docker run -d \
 git clone https://github.com/OlegKarenkikh/clickhouse-secure.git
 cd clickhouse-secure
 make build        # docker build
-make scan         # docker build + Trivy CVE scan
+make test         # build + smoke-test (HTTP ping + SELECT version())
+make scan         # build + Trivy CVE scan
 ```
 
 ---
