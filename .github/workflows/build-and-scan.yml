@@ -26,20 +26,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Plain docker build - guaranteed to load into local daemon for Trivy
-      - name: Build Docker image (local)
-        run: docker build -t "${{ env.LOCAL_TAG }}" .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      # Smoke-test: verify the server starts and serves HTTP requests
-      - name: Smoke-test container
-        run: |
-          CID=$(docker run -d -p 18123:8123 "${{ env.LOCAL_TAG }}")
-          echo "Container: $CID"
-          sleep 10
-          curl -sf http://localhost:18123/ping
-          VER=$(curl -sf 'http://localhost:18123/?query=SELECT+version()')
-          echo "ClickHouse version: $VER"
-          docker stop "$CID"
+      # Build with GHA layer cache so the test job can reuse layers
+      - name: Build Docker image (local)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ env.LOCAL_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Trivy - Table (PR log)
         uses: aquasecurity/trivy-action@0.35.0
@@ -98,10 +96,62 @@ jobs:
           trivyignores: .trivyignore
           exit-code: '1'
 
+  test:
+    name: Test container
+    runs-on: ubuntu-latest
+    needs: build-and-scan
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (local)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ env.LOCAL_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Validate container metadata and file structure with container-structure-test
+      - name: Install container-structure-test
+        run: |
+          curl -LO https://github.com/GoogleContainerTools/container-structure-test/releases/download/v1.19.3/container-structure-test-linux-amd64
+          chmod +x container-structure-test-linux-amd64
+          sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+      - name: Run container structure tests
+        run: |
+          container-structure-test test \
+            --image "${{ env.LOCAL_TAG }}" \
+            --config tests/container-structure-test.yaml
+
+      # Smoke-test: verify the server starts and responds to HTTP requests
+      - name: Smoke-test container
+        run: |
+          CID=$(docker run -d -p 18123:8123 "${{ env.LOCAL_TAG }}")
+          echo "Container: $CID"
+          # Wait for ClickHouse to be ready (up to 60 s, check every 5 s)
+          for i in $(seq 1 12); do
+            curl -sf http://localhost:18123/ping && break
+            echo "Waiting for ClickHouse... attempt $i/12"
+            sleep 5
+          done
+          curl -sf http://localhost:18123/ping
+          VER=$(curl -sf 'http://localhost:18123/?query=SELECT+version()')
+          echo "ClickHouse version: $VER"
+          docker stop "$CID"
+
   push-to-dockerhub:
     name: Push -> Docker Hub
     runs-on: ubuntu-latest
-    needs: build-and-scan
+    needs: test
     if: |
       github.event_name != 'pull_request' &&
       (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
