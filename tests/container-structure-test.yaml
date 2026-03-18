@@ -1,0 +1,56 @@
+schemaVersion: 2.0.0
+
+# Validate metadata
+metadataTest:
+  user: clickhouse
+  exposedPorts:
+    - "8123"
+    - "9000"
+    - "9009"
+  entrypoint:
+    - /usr/bin/clickhouse-server
+  cmd:
+    - --config-file=/etc/clickhouse-server/config.xml
+
+# Validate required files exist inside the image
+fileExistenceTests:
+  - name: clickhouse binary
+    path: /usr/bin/clickhouse
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+
+  - name: clickhouse-server symlink
+    path: /usr/bin/clickhouse-server
+    shouldExist: true
+
+  - name: clickhouse-client symlink
+    path: /usr/bin/clickhouse-client
+    shouldExist: true
+
+  - name: clickhouse-local symlink
+    path: /usr/bin/clickhouse-local
+    shouldExist: true
+
+  - name: clickhouse-keeper symlink
+    path: /usr/bin/clickhouse-keeper
+    shouldExist: true
+
+  - name: clickhouse server config
+    path: /etc/clickhouse-server/config.xml
+    shouldExist: true
+
+  - name: clickhouse data directory
+    path: /var/lib/clickhouse
+    shouldExist: true
+
+  - name: clickhouse log directory
+    path: /var/log/clickhouse-server
+    shouldExist: true
+
+  - name: passwd file
+    path: /etc/passwd
+    shouldExist: true
+
+  - name: group file
+    path: /etc/group
+    shouldExist: true
