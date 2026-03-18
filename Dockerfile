@@ -29,9 +29,6 @@ COPY --from=source /usr/bin/clickhouse-keeper  /usr/bin/clickhouse-keeper
 # Конфиги
 COPY --from=source /etc/clickhouse-server /etc/clickhouse-server
 
-# Entrypoint
-COPY --from=source /entrypoint.sh /entrypoint.sh
-
 # Рабочие директории
 COPY --from=source /var/lib/clickhouse          /var/lib/clickhouse
 COPY --from=source /var/log/clickhouse-server   /var/log/clickhouse-server
@@ -39,4 +36,6 @@ COPY --from=source /var/run/clickhouse-server   /var/run/clickhouse-server
 
 EXPOSE 8123 9000 9009
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Использовать бинарь напрямую — в distroless-образе нет shell для выполнения скриптов
+ENTRYPOINT ["/usr/bin/clickhouse-server"]
+CMD ["--config-file=/etc/clickhouse-server/config.xml"]
